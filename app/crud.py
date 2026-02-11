@@ -1,16 +1,25 @@
+from .database import get_db_connection
+from . import schemas
+import psycopg2.extras
 
-from sqlalchemy.orm import Session
-from . import models, schemas
+def get_item(conn, item_id: int):
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute("SELECT * FROM items WHERE id = %s", (item_id,))
+        item = cur.fetchone()
+        return item
 
-def get_item(db: Session, item_id: int):
-    return db.query(models.Item).filter(models.Item.id == item_id).first()
+def get_items(conn, skip: int = 0, limit: int = 100):
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute("SELECT * FROM items ORDER BY id LIMIT %s OFFSET %s", (limit, skip))
+        items = cur.fetchall()
+        return items
 
-def get_items(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Item).offset(skip).limit(limit).all()
-
-def create_item(db: Session, item: schemas.ItemCreate):
-    db_item = models.Item(name=item.name, description=item.description)
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
+def create_item(conn, item: schemas.ItemCreate):
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            "INSERT INTO items (name, description) VALUES (%s, %s) RETURNING *",
+            (item.name, item.description),
+        )
+        new_item = cur.fetchone()
+        conn.commit()
+        return new_item
