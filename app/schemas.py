@@ -1,12 +1,13 @@
 
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 # --- Sensors ---
 class SensorBase(BaseModel):
     name: str
-    model: str | None = None
+    model: Optional[str] = None
 
 class SensorCreate(SensorBase):
     pass
@@ -35,11 +36,11 @@ class Location(LocationBase):
 # --- Environment Data ---
 class EnvironmentDataBase(BaseModel):
     sensor_id: int
-    location_id: int | None = None
-    temperature: float | None = None
-    humidity: float | None = None
-    pressure: float | None = None
-    co2: float | None = None
+    location_id: int
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    pressure: Optional[float] = None
+    co2: Optional[float] = None
 
 class EnvironmentDataCreate(EnvironmentDataBase):
     pass
@@ -54,8 +55,9 @@ class EnvironmentData(EnvironmentDataBase):
 # --- Soil Data ---
 class SoilDataBase(BaseModel):
     sensor_id: int
-    location_id: int | None = None
-    moisture: float | None = None
+    location_id: int
+    moisture: float
+    adc: int
 
 class SoilDataCreate(SoilDataBase):
     pass
